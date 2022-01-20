@@ -34,7 +34,7 @@ let depth_first_collect graph start =
 
 let g:'a graph = [(1, 2); (1, 3); (1, 4); (2, 6); (3, 5); (4, 6); (6, 5); (6, 7); (5, 4)]
 
-let test_connessi graph n m = List.mem m (depth_first_collect graph n)
+let test_connessi2 graph n m = List.mem m (depth_first_collect graph n)
 
 let esiste_ciclo graph n = 
   let rec search visited = function
@@ -61,6 +61,13 @@ let grafo_connesso (nodi, archi) =
     |[x] -> true
     | x::y::rest -> raggiungibile archi x y && aux (y::rest)
   in aux nodi
+
+
+let test_connessi g a b =
+  let rec aux visited = function 
+      [] -> false
+    | x::rest -> x = b || aux (x::visited) (successori g a @ rest)
+  in aux [] [a]
 
 let rec rimNoRep k = function
     [] -> []
@@ -187,6 +194,7 @@ let rec listfrom a = function
 
 let gl:'a graph = [(1,2);(2,3);(3,4);(4,5);(5,6);(6,3)]
 let g2:'a graph = [(1,2);(2,3);(3,4);(4,5);(5,6)]
+let g3:'a graph = [(1,3);(2,6);(3,4);(3,5);(3,6);(4,2);(4,5);(5,4);(6,5)]
 
 let ciclo2 g start = 
   let rec fromnode visited node = 
@@ -197,12 +205,39 @@ let ciclo2 g start =
     | x::rest -> try fromnode visited x with _ -> fromlist visited rest
   in fromnode [] start
 
+let pari x = (x mod 2 = 0)
+
+let path_n_p g p n start = 
+  let rec fromnode visited n node = 
+    if List.mem node visited then failwith "loop"
+    else if n = 0 then [] 
+    else node:: fromlist (node::visited) (if p node then (n-1) else n) (successori g node)
+  and fromlist visited n = function
+      [] -> failwith "nope"
+    | x::rest -> try fromnode visited n x with _ -> fromlist visited n rest
+  in fromnode [] n start
+
+let rec listfrom a = function
+    [] -> []
+  | x::rest -> if x = a then a::rest else listfrom a rest
+
+let ciclo3 g start =   
+  let rec fromnode visited node = 
+    if List.mem node visited then  listfrom node (List.rev (node::visited))
+    else fromlist (node::visited) (successori g node)
+  and fromlist visited = function
+      [] -> failwith "nope"
+    | x::rest -> try fromnode visited x with _ -> fromlist visited rest
+  in fromnode [] start
 
 (* 
 test_connessi g 1 6;;
 esiste_ciclo g 4;;
 ciclo g 4;;
 ciclo2 gl 1;;
+ciclo3 gl 1;;
 ciclo2 g2 1;;
+ciclo3 g2 1;;
+path_n_p g3 pari 2 1;;
 #use "Esercizi/es10.ml";; 
 *)
